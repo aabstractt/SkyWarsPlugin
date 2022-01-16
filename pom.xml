@@ -7,19 +7,24 @@
     <groupId>dev.thatsmybaby</groupId>
     <artifactId>SkyWarsPlugin</artifactId>
     <version>1.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
     </properties>
 
+    <modules>
+        <module>lobby</module>
+        <module>plugin</module>
+        <module>shared</module>
+    </modules>
+
     <dependencies>
         <dependency>
-            <groupId>cn.nukkit</groupId>
-            <artifactId>nukkit</artifactId>
-            <version>1.0-SNAPSHOT</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/powernukkit-1.6.0.0-PN-SNAPSHOT-shaded.jar</systemPath>
+            <groupId>org.powernukkit</groupId>
+            <artifactId>powernukkit</artifactId>
+            <version>1.5.2.1-PN</version>
         </dependency>
 
         <dependency>
@@ -32,7 +37,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.13.0</version>
+            <version>2.13.1</version>
         </dependency>
     </dependencies>
 
