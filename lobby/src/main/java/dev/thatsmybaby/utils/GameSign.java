@@ -66,8 +66,6 @@ final public class GameSign {
         if (this.tickWaiting > 5) {
             if ((this.serverName = GameProvider.getInstance().requestGame(this.positionString, this.serverName)) == null) {
                 GameLobby.getInstance().getLogger().warning("Server available not found...");
-
-                return;
             }
 
             this.tickWaiting = 0;
