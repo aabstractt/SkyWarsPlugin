@@ -85,7 +85,7 @@ public class SWArena {
     }
 
     public void removePlayer(Player player) {
-
+        this.players.remove(player.getName());
     }
 
     public SWPlayer getPlayer(Player player) {
@@ -117,7 +117,9 @@ public class SWArena {
     }
 
     public void broadcastMessage(String message, String... args) {
-
+        for (SWPlayer player : this.players.values()) {
+            player.sendMessage(message, args);
+        }
     }
 
     public void forceClose() {

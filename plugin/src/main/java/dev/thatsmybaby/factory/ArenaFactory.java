@@ -52,6 +52,10 @@ final public class ArenaFactory {
         return this.arenas.get(id);
     }
 
+    public SWArena getSignArena(String signString) {
+        return this.arenas.values().stream().filter(arena -> signString.equals(arena.getPositionString())).findFirst().orElse(null);
+    }
+
     public SWArena getPlayerArena(Player player) {
         return this.arenas.values().stream().filter(arena -> arena.inArena(player)).findFirst().orElse(null);
     }

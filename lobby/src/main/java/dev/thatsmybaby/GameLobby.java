@@ -47,8 +47,12 @@ public class GameLobby extends PluginBase {
     public void onDisable() {
         GameProvider.runTransaction(jedis -> {
             for (GameSign gameSign : SignFactory.getInstance().getGameSigns().values()) {
-                if (jedis.sismember(GameProvider.HASH_GAMES_REQUEST, gameSign.getPositionString())) {
-                    jedis.srem(GameProvider.HASH_GAMES_REQUEST, gameSign.getPositionString());
+                if (gameSign.getServerName() == null) {
+                    continue;
+                }
+
+                if (jedis.sismember(String.format(GameProvider.HASH_SERVER_GAMES_REQUEST, gameSign.getServerName()), gameSign.getPositionString())) {
+                    jedis.srem(String.format(GameProvider.HASH_SERVER_GAMES_REQUEST, gameSign.getServerName()), gameSign.getPositionString());
                 }
             }
         });

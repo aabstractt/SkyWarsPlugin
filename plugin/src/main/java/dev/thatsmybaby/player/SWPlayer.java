@@ -3,6 +3,7 @@ package dev.thatsmybaby.player;
 import cn.nukkit.Player;
 import cn.nukkit.Server;
 import cn.nukkit.level.Location;
+import dev.thatsmybaby.Placeholders;
 import dev.thatsmybaby.object.SWArena;
 import lombok.Getter;
 
@@ -55,6 +56,10 @@ public class SWPlayer {
 
         instance.getFoodData().setLevel(instance.getFoodData().getMaxLevel());
         instance.setHealth(instance.getMaxHealth());
+    }
+
+    public void sendMessage(String message, String... args) {
+        getInstance().sendMessage(Placeholders.replacePlaceholders(message, args));
     }
 
     public void increaseKills() {

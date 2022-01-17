@@ -8,6 +8,10 @@ import cn.nukkit.utils.PluginException;
 
 final public class Placeholders {
 
+    public static String replacePlaceholders(String message, String... args) {
+        return message;
+    }
+
     public static String locationToString(Location loc) {
         return "";
     }

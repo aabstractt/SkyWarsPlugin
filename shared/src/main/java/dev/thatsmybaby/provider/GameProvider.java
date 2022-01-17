@@ -20,8 +20,10 @@ import java.util.function.Function;
 
 public class GameProvider {
 
-    // Lobby server add a sign id to request new game
-    public static String HASH_GAMES_REQUEST = "sw_games_request";
+    // List of all game servers running
+    public static String HASH_GAME_SERVERS = "sw_game_servers";
+    // Lobby server add a sign id to request new game to a server available
+    public static String HASH_SERVER_GAMES_REQUEST = "sw_server_games_request%%s";
     // Game server insert hash of a game running
     public static String HASH_GAMES_RUNNING = "sw_games_running";
     // Game server send the data to this hash
@@ -58,6 +60,26 @@ public class GameProvider {
         this.password = password;
     }
 
+    public void addServer(String serverName) {
+        runTransaction(jedis -> {
+            if (jedis.sismember(HASH_GAME_SERVERS, serverName)) {
+                return;
+            }
+
+            jedis.sadd(HASH_GAME_SERVERS, serverName);
+        });
+    }
+
+    public void removeServer(String serverName) {
+        runTransaction(jedis -> {
+            if (!jedis.sismember(HASH_GAME_SERVERS, serverName)) {
+                return;
+            }
+
+            jedis.srem(HASH_GAME_SERVERS, serverName);
+        });
+    }
+
     public void updateGame(String mapName, String positionString, String serverName, int gameId, GameStatus gameStatus, int playersCount, int maxSlots, boolean started) {
         runTransaction(jedis -> {
             if (started) {
@@ -79,10 +101,10 @@ public class GameProvider {
         });
     }
 
-    public void removeGame(String hash) {
+    public void removeGame(String hash, String serverName) {
         runTransaction(jedis -> {
-            if (jedis.sismember(HASH_GAMES_REQUEST, hash)) {
-                jedis.srem(HASH_GAMES_REQUEST, hash);
+            if (jedis.sismember(String.format(HASH_SERVER_GAMES_REQUEST, serverName), hash)) {
+                jedis.srem(String.format(HASH_SERVER_GAMES_REQUEST, serverName), hash);
             }
 
             if (jedis.sismember(HASH_GAMES_RUNNING, hash)) {
@@ -95,13 +117,23 @@ public class GameProvider {
         });
     }
 
-    public void requestGame(String string) {
-        runTransaction(jedis -> {
-            if (jedis.sismember(HASH_GAMES_REQUEST, string)) {
-                return;
+    public String requestGame(String string, String serverName) {
+        return runTransaction(jedis -> {
+            if (serverName != null && jedis.sismember(String.format(HASH_SERVER_GAMES_REQUEST, serverName), string)) {
+                jedis.sadd(String.format(HASH_SERVER_GAMES_REQUEST, serverName), string);
             }
 
-            jedis.sadd(HASH_GAMES_REQUEST, string);
+            String finalServerName = findServerAvailable();
+
+            if (finalServerName == null) {
+                return null;
+            }
+
+            if (!jedis.sismember(String.format(HASH_SERVER_GAMES_REQUEST, finalServerName), string)) {
+                jedis.sadd(String.format(HASH_SERVER_GAMES_REQUEST, finalServerName), string);
+            }
+
+            return finalServerName;
         });
     }
 
@@ -114,6 +146,44 @@ public class GameProvider {
             }
 
             return mapper.convertValue(map, GameArena.class);
+        });
+    }
+
+    public List<GameArena> getArenasAvailable() {
+        return runTransaction(jedis -> {
+            List<GameArena> list = new ArrayList<>();
+
+            for (String rawId : jedis.smembers(HASH_GAMES_RUNNING)) {
+                Map<String, String> map = jedis.hgetAll(String.format(HASH_GAMES_UPDATING, rawId));
+
+                if (map.isEmpty()) {
+                    continue;
+                }
+
+                list.add(mapper.convertValue(map, GameArena.class));
+            }
+
+            return list;
+        });
+    }
+
+    public String findServerAvailable() {
+        return runTransaction(jedis -> {
+            Map<String, Integer> map = new HashMap<>();
+            List<GameArena> list = getArenasAvailable();
+
+            for (String serverName : jedis.smembers(HASH_GAME_SERVERS)) {
+                map.put(serverName, (int) list.stream().filter(gameArena -> gameArena.getServerName().equalsIgnoreCase(serverName)).count());
+            }
+
+            if (map.isEmpty()) {
+                return null;
+            }
+
+            List<Map.Entry<String, Integer>> entryList = new ArrayList<>(map.entrySet());
+            entryList.sort(Map.Entry.comparingByValue());
+
+            return entryList.get(0).getKey();
         });
     }
 
@@ -183,6 +253,6 @@ public class GameProvider {
         String branchName = properties.getProperty("git.branch", "unknown");
         String commitId = properties.getProperty("git.commit.id.abbrev", "unknown");
 
-        return new VersionInfo(branchName, commitId, branchName.equals("release"), properties.getProperty("git.commit.user.name"));
+        return new VersionInfo(branchName, commitId, !branchName.equals("release"), properties.getProperty("git.commit.user.name"));
     }
 }

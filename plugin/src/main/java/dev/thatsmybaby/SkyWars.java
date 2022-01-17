@@ -12,8 +12,8 @@ import lombok.Getter;
 
 public class SkyWars extends PluginBase {
 
-    @Getter
-    private static SkyWars instance;
+    @Getter private static SkyWars instance;
+    @Getter private static String serverName;
 
     @Override
     public void onEnable() {
@@ -21,10 +21,13 @@ public class SkyWars extends PluginBase {
 
         this.saveDefaultConfig();
 
+        serverName = getConfig().getString("redis.server-name");
+
         MapFactory.getInstance().init();
 
         // TODO: initialize connection with the games management
         GameProvider.getInstance().init(getConfig().getString("redis.address"), getConfig().getString("redis.password"));
+        GameProvider.getInstance().addServer(getServerName());
 
         this.getServer().getPluginManager().registerEvents(new PlayerJoinListener(), this);
 
@@ -40,35 +43,35 @@ public class SkyWars extends PluginBase {
                 continue;
             }
 
-            GameProvider.getInstance().removeGame(arena.getPositionString());
+            GameProvider.getInstance().removeGame(arena.getPositionString(), getServerName());
         }
+
+        GameProvider.getInstance().removeServer(getServerName());
     }
 
     private void tick() {
         GameProvider.runTransaction(jedis -> {
-            for (String rawId : jedis.smembers(GameProvider.HASH_GAMES_REQUEST)) {
-                SWArena arena = ArenaFactory.getInstance().getRandomArena(true);
+            for (String rawId : jedis.smembers(String.format(GameProvider.HASH_SERVER_GAMES_REQUEST, serverName))) {
+                SWArena arena = ArenaFactory.getInstance().getSignArena(rawId);
 
                 if (arena == null) {
-                    arena = ArenaFactory.getInstance().registerNewArena(rawId);
-
-                    if (arena == null) {
-                        System.out.println("Games available not found...");
-                    }
+                    jedis.srem(String.format(GameProvider.HASH_SERVER_GAMES_REQUEST, serverName), rawId);
                 }
 
-                if (arena != null) {
-                    GameProvider.getInstance().updateGame(arena.getMap().getMapName(), rawId, getServerName(), arena.getId(), arena.getStatus(), arena.getPlayers().size(), arena.getMap().getMaxSlots(), !arena.isAllowedJoin());
+                if (arena == null && (arena = ArenaFactory.getInstance().getRandomArena(true)) == null && (arena = ArenaFactory.getInstance().registerNewArena(rawId)) == null) {
+                    getLogger().error("No game found! Looking again at another server");
 
-                    getLogger().warning("Game found! Sending status to " + rawId);
+                    continue;
                 }
 
-                jedis.srem(GameProvider.HASH_GAMES_REQUEST, rawId);
+                if (!arena.worldWasGenerated()) {
+                    return;
+                }
+
+                GameProvider.getInstance().updateGame(arena.getMap().getMapName(), rawId, getServerName(), arena.getId(), arena.getStatus(), arena.getPlayers().size(), arena.getMap().getMaxSlots(), !arena.isAllowedJoin());
+
+                getLogger().warning("Game found! Sending to " + rawId);
             }
         });
-    }
-
-    public static String getServerName() {
-        return instance.getConfig().getString("server-name");
     }
 }
