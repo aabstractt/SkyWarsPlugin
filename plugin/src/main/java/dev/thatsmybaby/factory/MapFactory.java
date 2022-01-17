@@ -6,12 +6,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.thatsmybaby.SkyWars;
 import dev.thatsmybaby.object.SWMap;
 import lombok.Getter;
+import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 
 final public class MapFactory {
@@ -39,6 +37,8 @@ final public class MapFactory {
 
     public void registerNewMap(SWMap map) {
         this.maps.put(map.getMapName(), map);
+
+        System.out.println(map.getSpawns());
     }
 
     public void save() {
@@ -52,16 +52,8 @@ final public class MapFactory {
     }
 
     public void copyMap(File from, File to) {
-        copyMap(from.toString(), to.toString());
-    }
-
-    public void copyMap(String from, String to) {
-        Path sourceDirectory = Paths.get(from);
-        Path targetDirectory = Paths.get(to);
-
-        //copy source to target using Files Class
         try {
-            Files.copy(sourceDirectory, targetDirectory);
+            FileUtils.copyDirectory(from, to);
         } catch (IOException e) {
             e.printStackTrace();
         }

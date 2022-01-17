@@ -13,11 +13,13 @@ final public class Placeholders {
     }
 
     public static String locationToString(Location loc) {
-        return "";
+        return positionToString(loc) + ":" + loc.yaw + ":" + loc.pitch;
     }
 
-    public static Location locationFromString(String serialized, Level level) {
-        return null;
+    public static Location locationFromString(String string, Level level) {
+        String[] split = string.split(":");
+
+        return Location.fromObject(positionFromString(string), level, Double.parseDouble(split[4]), Double.parseDouble(split[5]));
     }
 
     public static String positionToString(Position pos) {

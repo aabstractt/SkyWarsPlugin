@@ -2,3 +2,21 @@ redis:
   address: 127.0.0.1
   password: ''
   server-name: 'sw01'
+
+scoreboard:
+  title: "SkyWars"
+  lines:
+    default:
+      - ""
+      - "%refill-lines%"
+      - "&bStarting in:&f %starting_time% <display=%is_starting%"
+      - "&bWaiting players<display=!%is_starting%"
+      - "  <display=!%is_started%"
+      - "&bPlayers:&f %players_count%/%max_slots%"
+      - " "
+      - "&bKills:&f %kills% <display=%is_started%"
+      - "   <display=%is_started%"
+      - "&6play.socrally.com"
+    refill-lines:
+      - "&bChest refill:&f %refill_time%"
+      - "&b"

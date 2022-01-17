@@ -3,7 +3,9 @@ package dev.thatsmybaby.object;
 import cn.nukkit.Player;
 import cn.nukkit.Server;
 import cn.nukkit.level.Level;
+import cn.nukkit.utils.TextFormat;
 import dev.thatsmybaby.player.SWPlayer;
+import dev.thatsmybaby.provider.GameProvider;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -17,7 +19,7 @@ public class SWArena {
     @Getter @Setter private String positionString;
     @Getter private final Map<String, SWPlayer> players = new HashMap<>();
 
-    private final List<Integer> slots = new ArrayList<>();
+    private final List<Integer> slots;
 
     @Getter @Setter
     private GameStatus status = GameStatus.IDLE;
@@ -30,6 +32,8 @@ public class SWArena {
         this.worldName = "SW-" + map.getMapName() + "-" + id;
 
         this.positionString = positionString;
+
+        this.slots = new ArrayList<>(map.getSpawns().keySet());
     }
 
     public Level getWorld() {
@@ -54,13 +58,19 @@ public class SWArena {
         return this.status.ordinal() >= GameStatus.IN_GAME.ordinal();
     }
 
+    public boolean isStarting() {
+        return false;
+    }
+
     public boolean isFull() {
         return this.players.size() > this.map.getMaxSlots();
     }
 
     public void joinAsPlayer(Player player) {
+        GameProvider.getInstance().setPlayerMap(player.getName(), -1);
+
         if (!this.worldWasGenerated()) {
-            System.out.println("Generating world...");
+            player.kick(TextFormat.RED + "World is generating...");
 
             return;
         }
@@ -72,7 +82,7 @@ public class SWArena {
         Optional<Integer> optional = this.selectFirstSlot();
 
         if (!optional.isPresent()) {
-            System.out.println("Slots not found");
+            player.kick("Slot available not found...");
 
             return;
         }
@@ -81,9 +91,10 @@ public class SWArena {
 
         SWPlayer targetPlayer = new SWPlayer(player.getName(), player.getLoginChainData().getXUID(), this, optional.get());
 
-        targetPlayer.lobbyAttributes();
-
         this.players.put(player.getName(), targetPlayer);
+
+        targetPlayer.lobbyAttributes();
+        targetPlayer.getScoreboardBuilder().update(this);
 
         this.broadcastMessage("PLAYER_JOINED", player.getName(), String.valueOf(this.players.size()), String.valueOf(this.map.getMaxSlots()));
     }
