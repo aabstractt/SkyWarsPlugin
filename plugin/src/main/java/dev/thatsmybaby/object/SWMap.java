@@ -3,8 +3,7 @@ package dev.thatsmybaby.object;
 import cn.nukkit.level.Level;
 import cn.nukkit.level.Location;
 import dev.thatsmybaby.Placeholders;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.*;
 
 import java.lang.reflect.Field;
 import java.util.Collections;
@@ -12,10 +11,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 @AllArgsConstructor
+@NoArgsConstructor
 @Getter
+@ToString
+@EqualsAndHashCode
 public class SWMap {
 
-    private final String mapName;
+    private String mapName;
     private int minSlots;
     private int maxSlots;
     private int priority;

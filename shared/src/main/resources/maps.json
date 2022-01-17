@@ -1,0 +1,11 @@
+{
+  "Trees": {
+      "mapName": "Trees",
+      "minSlots": 2,
+      "maxSlots": 12,
+      "priority": 0,
+      "spawns": {
+          "1": "2103:2:2:3:3"
+      }
+  }
+}

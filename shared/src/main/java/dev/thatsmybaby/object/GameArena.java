@@ -1,23 +1,23 @@
 package dev.thatsmybaby.object;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
-@Getter
 @AllArgsConstructor
-@Setter
-public class GameArena {
+@NoArgsConstructor
+@Getter
+@ToString
+@EqualsAndHashCode
+final public class GameArena {
 
-    private final String serverName;
-    private final String mapName;
-    private final String gameId;
-    private final String playersCount;
-    private final String maxSlots;
-    private String gameStatus;
+    private String serverName;
+    private String mapName;
+    private String id;
+    private String playersCount;
+    private String maxSlots;
+    private String status;
 
     public int idAsInt() {
-        return Integer.parseInt(this.gameId);
+        return Integer.parseInt(this.id);
     }
 
     public int playersAsInt() {
@@ -29,6 +29,6 @@ public class GameArena {
     }
 
     public String asHash() {
-        return this.serverName + "%" + this.gameId;
+        return this.serverName + "%" + this.id;
     }
 }

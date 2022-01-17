@@ -14,6 +14,7 @@ public class SWArena {
     @Getter private final int id;
     @Getter private final SWMap map;
     @Getter private final String worldName;
+    @Getter private String positionString;
     @Getter private final Map<String, SWPlayer> players = new HashMap<>();
 
     private final List<Integer> slots = new ArrayList<>();
@@ -21,12 +22,14 @@ public class SWArena {
     @Getter @Setter
     private GameStatus status = GameStatus.IDLE;
 
-    public SWArena(Integer id, SWMap map) {
+    public SWArena(Integer id, SWMap map, String positionString) {
         this.id = id;
 
         this.map = map;
 
         this.worldName = "SW-" + map.getMapName() + "-" + id;
+
+        this.positionString = positionString;
     }
 
     public Level getWorld() {

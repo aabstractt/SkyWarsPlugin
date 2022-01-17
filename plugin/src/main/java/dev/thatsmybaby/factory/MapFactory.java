@@ -1,6 +1,7 @@
 package dev.thatsmybaby.factory;
 
 import cn.nukkit.utils.Config;
+import cn.nukkit.utils.TextFormat;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.thatsmybaby.SkyWars;
 import dev.thatsmybaby.object.SWMap;
@@ -20,8 +21,12 @@ final public class MapFactory {
         Config config = new Config(new File(SkyWars.getInstance().getDataFolder(), "maps.json"));
 
         for (Object object : config.getAll().values()) {
+            System.out.println(object);
+
             this.registerNewMap(mapper.convertValue(object, SWMap.class), false);
         }
+
+        SkyWars.getInstance().getLogger().info(TextFormat.AQUA + "SkyWars: " + this.maps.size() + " map(s) loaded.");
     }
 
     public void registerNewMap(SWMap map, boolean save) {

@@ -18,11 +18,11 @@ final public class ArenaFactory {
 
     private int gamesPlayed = 1;
 
-    public SWArena registerNewArena() {
-        return registerNewArena(null);
+    public SWArena registerNewArena(String positionString) {
+        return registerNewArena(null, positionString);
     }
 
-    public SWArena registerNewArena(SWMap map) {
+    public SWArena registerNewArena(SWMap map, String positionString) {
         if (map == null) {
             map = MapFactory.getInstance().getRandomMap();
         }
@@ -33,7 +33,7 @@ final public class ArenaFactory {
             return null;
         }
 
-        SWArena arena = new SWArena(this.gamesPlayed++, map);
+        SWArena arena = new SWArena(this.gamesPlayed++, map, positionString);
 
         this.arenas.put(arena.getId(), arena);
 
@@ -52,11 +52,11 @@ final public class ArenaFactory {
         return this.arenas.values().stream().filter(arena -> arena.inArena(player)).findFirst().orElse(null);
     }
 
-    public SWArena getRandomArena() {
+    public SWArena getRandomArena(boolean withoutSign) {
         SWArena betterArena = null;
 
         for (SWArena arena : this.arenas.values()) {
-            if (!arena.isAllowedJoin()) {
+            if (!arena.isAllowedJoin() || (arena.getPositionString() != null && withoutSign)) {
                 continue;
             }
 
