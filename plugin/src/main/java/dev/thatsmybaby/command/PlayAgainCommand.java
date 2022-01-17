@@ -15,7 +15,7 @@ import dev.thatsmybaby.provider.GameProvider;
 public class PlayAgainCommand extends Command {
 
     public PlayAgainCommand(String name, String description) {
-        super(name, description);
+        super(name, description, null, new String[]{"findgame"});
     }
 
     @Override
@@ -42,13 +42,11 @@ public class PlayAgainCommand extends Command {
 
         SWArena betterArena = ArenaFactory.getInstance().getRandomArena(false);
 
-        if (betterArena == null || betterArena.getId() == arena.getId()) {
+        if (betterArena == null || betterArena.getId() == arena.getId() || !ArenaFactory.getInstance().joinArena((Player) sender, betterArena)) {
             TaskUtils.runAsync(() -> findGame((Player) sender));
 
             return false;
         }
-
-        ArenaFactory.getInstance().joinArena((Player) sender, betterArena);
 
         return false;
     }
@@ -62,11 +60,7 @@ public class PlayAgainCommand extends Command {
         GameArena betterArena = null;
 
         for (GameArena arena : GameProvider.getInstance().getArenasAvailable()) {
-            if (arena.getServerName().equalsIgnoreCase(SkyWars.getServerName())) {
-                continue;
-            }
-
-            if (arena.playersAsInt() >= arena.maxSlotsAsInt()) {
+            if (arena.getServerName().equalsIgnoreCase(SkyWars.getServerName()) || arena.playersAsInt() >= arena.maxSlotsAsInt()) {
                 continue;
             }
 

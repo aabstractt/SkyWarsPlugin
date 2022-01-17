@@ -4,6 +4,7 @@ import cn.nukkit.Player;
 import cn.nukkit.Server;
 import cn.nukkit.level.Level;
 import cn.nukkit.utils.TextFormat;
+import dev.thatsmybaby.factory.ArenaFactory;
 import dev.thatsmybaby.player.SWPlayer;
 import dev.thatsmybaby.provider.GameProvider;
 import lombok.Getter;
@@ -40,10 +41,14 @@ public class SWArena {
         return Server.getInstance().getLevelByName(this.worldName);
     }
 
+    /**
+     * Select a slot for a player
+     * @return Optional<Integer>
+     */
     public Optional<Integer> selectFirstSlot() {
         Collections.shuffle(this.slots);
 
-        return this.slots.stream().findFirst();
+        return this.slots.stream().findAny();
     }
 
     public boolean worldWasGenerated() {
@@ -138,6 +143,6 @@ public class SWArena {
     }
 
     public void forceClose() {
-
+        ArenaFactory.getInstance().unregisterArena(this.id);
     }
 }

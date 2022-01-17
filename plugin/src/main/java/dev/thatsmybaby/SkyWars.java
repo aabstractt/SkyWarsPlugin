@@ -3,6 +3,7 @@ package dev.thatsmybaby;
 import cn.nukkit.Server;
 import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.utils.TextFormat;
+import dev.thatsmybaby.command.PlayAgainCommand;
 import dev.thatsmybaby.command.SWCommand;
 import dev.thatsmybaby.factory.ArenaFactory;
 import dev.thatsmybaby.factory.MapFactory;
@@ -35,6 +36,7 @@ public class SkyWars extends PluginBase {
         this.getServer().getPluginManager().registerEvents(new PlayerJoinListener(), this);
 
         this.getServer().getCommandMap().register("sw", new SWCommand("sw", "SkyWars commands"));
+        this.getServer().getCommandMap().register("playagain", new PlayAgainCommand("playagain", "Find a new game available"));
 
         Server.getInstance().getScheduler().scheduleRepeatingTask(this, this::tick, 10, true);
     }
@@ -52,6 +54,9 @@ public class SkyWars extends PluginBase {
         GameProvider.getInstance().removeServer(getServerName());
     }
 
+    /*
+     * Always listen every time there are requests for new arenas, in order to search for an available arena and send it
+     */
     private void tick() {
         GameProvider.runTransaction(jedis -> {
             for (String rawId : jedis.smembers(String.format(GameProvider.HASH_SERVER_GAMES_REQUEST, serverName))) {
