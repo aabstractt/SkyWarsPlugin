@@ -14,7 +14,7 @@ public class SWArena {
     @Getter private final int id;
     @Getter private final SWMap map;
     @Getter private final String worldName;
-    @Getter private String positionString;
+    @Getter @Setter private String positionString;
     @Getter private final Map<String, SWPlayer> players = new HashMap<>();
 
     private final List<Integer> slots = new ArrayList<>();
@@ -73,7 +73,7 @@ public class SWArena {
             return;
         }
 
-        this.slots.removeIf(slot -> Objects.equals(slot, optional.get()));
+        this.slots.removeIf(slot -> slot == optional.get().intValue());
 
         SWPlayer targetPlayer = new SWPlayer(player.getName(), player.getLoginChainData().getXUID(), this, optional.get());
 
@@ -82,8 +82,6 @@ public class SWArena {
         this.players.put(player.getName(), targetPlayer);
 
         this.broadcastMessage("PLAYER_JOINED", player.getName(), String.valueOf(this.players.size()), String.valueOf(this.map.getMaxSlots()));
-
-        // TODO: create player instance and insert into array
     }
 
     public void removePlayer(Player player) {

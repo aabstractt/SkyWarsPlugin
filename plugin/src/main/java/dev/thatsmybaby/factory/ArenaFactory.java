@@ -48,6 +48,10 @@ final public class ArenaFactory {
         return this.arenas.values().stream().filter(arena -> arena.getMap().getMapName().equalsIgnoreCase(map.getMapName())).collect(Collectors.toList());
     }
 
+    public SWArena getArena(int id) {
+        return this.arenas.get(id);
+    }
+
     public SWArena getPlayerArena(Player player) {
         return this.arenas.values().stream().filter(arena -> arena.inArena(player)).findFirst().orElse(null);
     }

@@ -1,5 +1,7 @@
 package dev.thatsmybaby.provider;
 
+import cn.nukkit.Player;
+import cn.nukkit.network.protocol.TransferPacket;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.thatsmybaby.VersionInfo;
 import dev.thatsmybaby.object.GameArena;
@@ -20,13 +22,13 @@ public class GameProvider {
 
     // Lobby server add a sign id to request new game
     public static String HASH_GAMES_REQUEST = "sw_games_request";
-
+    // Game server insert hash of a game running
     public static String HASH_GAMES_RUNNING = "sw_games_running";
     // Game server send the data to this hash
     public static String HASH_GAMES_UPDATING = "sw_games_updating";
     // Player send data to this hash (map selected, lastServer etc)
     public static String HASH_PLAYERS_JOINING = "sW_players_joining";
-
+    // Put here when a player is joining to a game server
     public final static String PLAYER_MAP_HASH = "sw_player_map:%s";
 
     @Getter private final static GameProvider instance = new GameProvider();
@@ -37,6 +39,7 @@ public class GameProvider {
     protected JedisPool jedisPool;
     private String password;
 
+    @SuppressWarnings("deprecation")
     public void init(String address, String password) {
         String[] addressSplit = address.split(":");
         String host = addressSplit[0];
@@ -48,14 +51,14 @@ public class GameProvider {
 
         Jedis jedis = this.jedisPool.getResource();
 
-        /*if (password != null && !password.isEmpty()) {
+        if (password != null && !password.isEmpty()) {
             jedis.auth(password);
-        }*/
+        }
 
         this.password = password;
     }
 
-    public void updateGame(String mapName, String positionString, String serverName, int id, GameStatus gameStatus, int playersCount, int maxSlots, boolean started) {
+    public void updateGame(String mapName, String positionString, String serverName, int gameId, GameStatus gameStatus, int playersCount, int maxSlots, boolean started) {
         runTransaction(jedis -> {
             if (started) {
                 return;
@@ -66,13 +69,29 @@ public class GameProvider {
             }
 
             jedis.hset(String.format(HASH_GAMES_UPDATING, positionString), new HashMap<String, String>() {{
-                put("id", String.valueOf(id));
+                put("id", String.valueOf(gameId));
                 put("mapName", mapName);
                 put("serverName", serverName);
                 put("status", gameStatus.name());
                 put("playersCount", String.valueOf(playersCount));
                 put("maxSlots", String.valueOf(maxSlots));
             }});
+        });
+    }
+
+    public void removeGame(String hash) {
+        runTransaction(jedis -> {
+            if (jedis.sismember(HASH_GAMES_REQUEST, hash)) {
+                jedis.srem(HASH_GAMES_REQUEST, hash);
+            }
+
+            if (jedis.sismember(HASH_GAMES_RUNNING, hash)) {
+                jedis.srem(HASH_GAMES_RUNNING, hash);
+            }
+
+            if (jedis.exists(String.format(HASH_GAMES_UPDATING, hash))) {
+                jedis.hdel(String.format(HASH_GAMES_UPDATING, hash), jedis.hgetAll(String.format(HASH_GAMES_UPDATING, hash)).keySet().toArray(new String[0]));
+            }
         });
     }
 
@@ -98,36 +117,13 @@ public class GameProvider {
         });
     }
 
-    public List<GameArena> getGamesAvailable() {
+    public int getPlayerMapId(String name) {
         return runTransaction(jedis -> {
-            List<GameArena> games = new ArrayList<>();
-
-            for (String hash : jedis.smembers(HASH_GAMES_RUNNING)) {
-                if (!jedis.exists(String.format(HASH_GAMES_UPDATING, hash))) {
-                    continue;
-                }
-
-                Map<String, String> storage = jedis.hgetAll(String.format(HASH_GAMES_UPDATING, hash));
-
-                games.add(mapper.convertValue(storage, GameArena.class));
-
-                /*arenas.add(new RedisGameArena(
-                        storage.get("serverName"),
-                        storage.get("folderName"),
-                        storage.get("mapName"),
-                        Integer.parseInt(storage.get("status")),
-                        Integer.parseInt(storage.get("playersCount")),
-                        Integer.parseInt(storage.get("maxSlots"))
-                ));*/
+            if (!jedis.exists(String.format(PLAYER_MAP_HASH, name))) {
+                return 0;
             }
 
-            return games;
-        });
-    }
-
-    public String getPlayerMap(String name) {
-        return runTransaction(jedis -> {
-            return jedis.get(String.format(PLAYER_MAP_HASH, name));
+            return Integer.parseInt(jedis.get(String.format(PLAYER_MAP_HASH, name)));
         });
     }
 
@@ -159,6 +155,14 @@ public class GameProvider {
 
             action.accept(jedis);
         }
+    }
+
+    public void connectTo(Player player, GameArena gameArena) {
+        setPlayerMap(player.getName(), gameArena.getId());
+
+        player.dataPacket(new TransferPacket() {{
+            address = gameArena.getServerName();
+        }});
     }
 
     private static VersionInfo loadVersion() {

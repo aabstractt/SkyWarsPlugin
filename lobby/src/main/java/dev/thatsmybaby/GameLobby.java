@@ -2,8 +2,10 @@ package dev.thatsmybaby;
 
 import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.plugin.PluginLogger;
+import dev.thatsmybaby.listener.PlayerInteractListener;
 import dev.thatsmybaby.listener.SignChangeListener;
 import dev.thatsmybaby.provider.GameProvider;
+import dev.thatsmybaby.utils.GameSign;
 import lombok.Getter;
 
 public class GameLobby extends PluginBase {
@@ -21,7 +23,7 @@ public class GameLobby extends PluginBase {
 
         SignFactory.getInstance().init();
 
-        System.out.println("Registering listener...");
+        this.getServer().getPluginManager().registerEvents(new PlayerInteractListener(), this);
         this.getServer().getPluginManager().registerEvents(new SignChangeListener(), this);
 
         PluginLogger logger = getLogger();
@@ -40,5 +42,15 @@ public class GameLobby extends PluginBase {
         } else {
             logger.info("§bDiscovered branch §9" + versionInfo.branchName() + "§b commitId §9" + versionInfo.commitId());
         }
+    }
+
+    public void onDisable() {
+        GameProvider.runTransaction(jedis -> {
+            for (GameSign gameSign : SignFactory.getInstance().getGameSigns().values()) {
+                if (jedis.sismember(GameProvider.HASH_GAMES_REQUEST, gameSign.getPositionString())) {
+                    jedis.srem(GameProvider.HASH_GAMES_REQUEST, gameSign.getPositionString());
+                }
+            }
+        });
     }
 }

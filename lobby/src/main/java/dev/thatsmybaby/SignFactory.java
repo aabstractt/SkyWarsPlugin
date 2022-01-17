@@ -1,6 +1,7 @@
 package dev.thatsmybaby;
 
 import cn.nukkit.Server;
+import cn.nukkit.level.Position;
 import cn.nukkit.utils.Config;
 import dev.thatsmybaby.utils.GameSign;
 import lombok.Getter;
@@ -12,8 +13,7 @@ import java.util.concurrent.*;
 final public class SignFactory {
 
     @Getter private final static SignFactory instance = new SignFactory();
-
-    private final Map<String, GameSign> gameSigns = new ConcurrentHashMap<>();
+    @Getter private final Map<String, GameSign> gameSigns = new ConcurrentHashMap<>();
 
     public void init() {
         for (String loc : GameLobby.getInstance().getConfig().getStringList("signs")) {
@@ -37,6 +37,10 @@ final public class SignFactory {
             config.set("signs", list);
             config.save();
         }
+    }
+
+    public GameSign getGameSignAt(Position position) {
+        return this.gameSigns.get(Placeholders.positionToString(position));
     }
 
     private void tick() {

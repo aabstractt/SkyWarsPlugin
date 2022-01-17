@@ -5,6 +5,7 @@ import cn.nukkit.plugin.PluginBase;
 import dev.thatsmybaby.command.SWCommand;
 import dev.thatsmybaby.factory.ArenaFactory;
 import dev.thatsmybaby.factory.MapFactory;
+import dev.thatsmybaby.listener.PlayerJoinListener;
 import dev.thatsmybaby.object.SWArena;
 import dev.thatsmybaby.provider.GameProvider;
 import lombok.Getter;
@@ -25,9 +26,22 @@ public class SkyWars extends PluginBase {
         // TODO: initialize connection with the games management
         GameProvider.getInstance().init(getConfig().getString("redis.address"), getConfig().getString("redis.password"));
 
+        this.getServer().getPluginManager().registerEvents(new PlayerJoinListener(), this);
+
         this.getServer().getCommandMap().register("sw", new SWCommand("sw", "SkyWars commands"));
 
         Server.getInstance().getScheduler().scheduleRepeatingTask(this, this::tick, 10, true);
+    }
+
+    @Override
+    public void onDisable() {
+        for (SWArena arena : ArenaFactory.getInstance().getArenas().values()) {
+            if (arena.getPositionString() == null) {
+                continue;
+            }
+
+            GameProvider.getInstance().removeGame(arena.getPositionString());
+        }
     }
 
     private void tick() {
@@ -44,8 +58,9 @@ public class SkyWars extends PluginBase {
                 }
 
                 if (arena != null) {
-                    System.out.println("Mapa encontrado, enviandole mapa a " + rawId);
                     GameProvider.getInstance().updateGame(arena.getMap().getMapName(), rawId, getServerName(), arena.getId(), arena.getStatus(), arena.getPlayers().size(), arena.getMap().getMaxSlots(), !arena.isAllowedJoin());
+
+                    getLogger().warning("Game found! Sending status to " + rawId);
                 }
 
                 jedis.srem(GameProvider.HASH_GAMES_REQUEST, rawId);
