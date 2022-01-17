@@ -33,4 +33,14 @@ final public class Placeholders {
 
         return new Position(Integer.parseInt(split[0]), Integer.parseInt(split[1]), Integer.parseInt(split[2]), Server.getInstance().getLevelByName(split[3]));
     }
+
+    public static int parseInt(String parse) {
+        try {
+            return Integer.parseInt(parse);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return -1;
+    }
 }

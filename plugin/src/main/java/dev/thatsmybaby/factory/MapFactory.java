@@ -8,6 +8,10 @@ import dev.thatsmybaby.object.SWMap;
 import lombok.Getter;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 
 final public class MapFactory {
@@ -23,20 +27,28 @@ final public class MapFactory {
         for (Object object : config.getAll().values()) {
             System.out.println(object);
 
-            this.registerNewMap(mapper.convertValue(object, SWMap.class), false);
+            this.registerNewMap(mapper.convertValue(object, SWMap.class));
         }
 
         SkyWars.getInstance().getLogger().info(TextFormat.AQUA + "SkyWars: " + this.maps.size() + " map(s) loaded.");
+
+        if ((new File(SkyWars.getInstance().getDataFolder(), "backups")).mkdirs()) {
+            SkyWars.getInstance().getLogger().info(String.format("Folder %s was generated successfully.", "arenas"));
+        }
     }
 
-    public void registerNewMap(SWMap map, boolean save) {
+    public void registerNewMap(SWMap map) {
         this.maps.put(map.getMapName(), map);
+    }
 
-        if (save) {
-            Config config = new Config(new File(SkyWars.getInstance().getDataFolder(), "maps.json"));
+    public void save() {
+        Config config = new Config(new File(SkyWars.getInstance().getDataFolder(), "maps.json"));
 
+        for (SWMap map : this.maps.values()) {
             config.set(map.getMapName(), map.serialize());
         }
+
+        config.save();
     }
 
     public void copyMap(File from, File to) {
@@ -44,7 +56,15 @@ final public class MapFactory {
     }
 
     public void copyMap(String from, String to) {
-        // TODO: Copy map folder
+        Path sourceDirectory = Paths.get(from);
+        Path targetDirectory = Paths.get(to);
+
+        //copy source to target using Files Class
+        try {
+            Files.copy(sourceDirectory, targetDirectory);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void removeMap(String mapName) {

@@ -1,11 +1,14 @@
 package dev.thatsmybaby.factory;
 
 import cn.nukkit.Player;
+import cn.nukkit.Server;
 import dev.thatsmybaby.SkyWars;
+import dev.thatsmybaby.TaskUtils;
 import dev.thatsmybaby.object.SWArena;
 import dev.thatsmybaby.object.SWMap;
 import lombok.Getter;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +40,33 @@ final public class ArenaFactory {
 
         this.arenas.put(arena.getId(), arena);
 
+        TaskUtils.runAsync(() -> {
+            MapFactory.getInstance().copyMap(new File(SkyWars.getInstance().getDataFolder(), "backups/" + arena.getMap().getMapName()), new File(Server.getInstance().getDataPath(), "worlds/" + arena.getWorldName()));
+
+            Server.getInstance().loadLevel(arena.getWorldName());
+        });
+
         return arena;
+    }
+
+    public boolean joinArena(Player player, int id) {
+        SWArena arena = getArena(id);
+
+        if (arena == null) {
+            return false;
+        }
+
+        return joinArena(player, arena);
+    }
+
+    public boolean joinArena(Player player, SWArena arena) {
+        if (!arena.isAllowedJoin()) {
+            return false;
+        }
+
+        arena.joinAsPlayer(player);
+
+        return true;
     }
 
     public void unregisterArena(int id) {

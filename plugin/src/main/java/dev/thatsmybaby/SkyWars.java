@@ -2,6 +2,7 @@ package dev.thatsmybaby;
 
 import cn.nukkit.Server;
 import cn.nukkit.plugin.PluginBase;
+import cn.nukkit.utils.TextFormat;
 import dev.thatsmybaby.command.SWCommand;
 import dev.thatsmybaby.factory.ArenaFactory;
 import dev.thatsmybaby.factory.MapFactory;
@@ -14,6 +15,8 @@ public class SkyWars extends PluginBase {
 
     @Getter private static SkyWars instance;
     @Getter private static String serverName;
+
+    public static int NORMAL_PRIORITY = 0, HIGH_PRIORITY = 1;
 
     @Override
     public void onEnable() {
@@ -73,5 +76,9 @@ public class SkyWars extends PluginBase {
                 getLogger().warning("Game found! Sending to " + rawId);
             }
         });
+    }
+
+    public static String invalidUsageGame() {
+        return TextFormat.RED + "Run this command in-game";
     }
 }

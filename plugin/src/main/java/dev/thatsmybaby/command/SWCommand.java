@@ -4,6 +4,7 @@ import cn.nukkit.command.Command;
 import cn.nukkit.command.CommandSender;
 import cn.nukkit.utils.TextFormat;
 import dev.thatsmybaby.command.argument.CreateArgument;
+import dev.thatsmybaby.command.argument.SpawnArgument;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,7 +19,8 @@ public class SWCommand extends Command {
         super(name, description);
 
         this.addArgument(
-                new CreateArgument("create", null)
+                new CreateArgument("create", "skywars.command.create"),
+                new SpawnArgument("spawn", "skywars.command.spawn")
         );
     }
 

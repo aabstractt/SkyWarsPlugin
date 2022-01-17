@@ -24,8 +24,8 @@ public class SWMap {
 
     private Map<Integer, String> spawns;
 
-    public void setSpawnLocation(int slot, String serialized) {
-        this.spawns.put(slot, serialized);
+    public void setSpawnLocation(int slot, Location loc) {
+        this.spawns.put(slot, Placeholders.locationToString(loc));
     }
 
     public Location getSpawnLocation(int slot, Level level) {

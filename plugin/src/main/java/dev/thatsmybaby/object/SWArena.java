@@ -50,6 +50,10 @@ public class SWArena {
         return this.status.ordinal() < GameStatus.IN_GAME.ordinal() && !this.isFull();
     }
 
+    public boolean isStarted() {
+        return this.status.ordinal() >= GameStatus.IN_GAME.ordinal();
+    }
+
     public boolean isFull() {
         return this.players.size() > this.map.getMaxSlots();
     }

@@ -6,7 +6,7 @@ import cn.nukkit.level.Position;
 import cn.nukkit.utils.TextFormat;
 import dev.thatsmybaby.GameLobby;
 import dev.thatsmybaby.Placeholders;
-import dev.thatsmybaby.TaskUtil;
+import dev.thatsmybaby.TaskUtils;
 import dev.thatsmybaby.object.GameArena;
 import dev.thatsmybaby.provider.GameProvider;
 import lombok.Getter;
@@ -42,7 +42,7 @@ final public class GameSign {
 
         player.sendMessage(TextFormat.GREEN + "Sending you to " + gameArena.getServerName() + "*" + gameArena.getMapName());
 
-        TaskUtil.runAsync(() -> GameProvider.getInstance().connectTo(player, gameArena));
+        TaskUtils.runAsync(() -> GameProvider.getInstance().connectTo(player, gameArena));
     }
 
     public void tick() {

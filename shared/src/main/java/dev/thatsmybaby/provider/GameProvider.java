@@ -197,10 +197,10 @@ public class GameProvider {
         });
     }
 
-    public void setPlayerMap(String name, String mapName) {
+    public void setPlayerMap(String name, int mapName) {
         runTransaction(jedis -> {
-            if (mapName != null) {
-                jedis.set(String.format(PLAYER_MAP_HASH, name), mapName);
+            if (mapName != -1) {
+                jedis.set(String.format(PLAYER_MAP_HASH, name), String.valueOf(mapName));
             } else {
                 jedis.del(String.format(PLAYER_MAP_HASH, name));
             }
@@ -228,7 +228,7 @@ public class GameProvider {
     }
 
     public void connectTo(Player player, GameArena gameArena) {
-        setPlayerMap(player.getName(), gameArena.getId());
+        setPlayerMap(player.getName(), gameArena.idAsInt());
 
         player.dataPacket(new TransferPacket() {{
             address = gameArena.getServerName();
