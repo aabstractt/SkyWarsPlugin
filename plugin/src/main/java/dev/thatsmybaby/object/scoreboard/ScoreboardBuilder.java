@@ -8,6 +8,7 @@ import dev.thatsmybaby.object.scoreboard.packets.RemoveObjectivePacket;
 import dev.thatsmybaby.object.scoreboard.packets.SetDisplayObjectivePacket;
 import dev.thatsmybaby.object.scoreboard.packets.SetScorePacket;
 import dev.thatsmybaby.object.scoreboard.packets.entry.ScorePacketEntry;
+import dev.thatsmybaby.object.task.GameCountDownUpdateTask;
 import dev.thatsmybaby.player.SWPlayer;
 import lombok.AllArgsConstructor;
 
@@ -95,14 +96,25 @@ public class ScoreboardBuilder {
     }
 
     private String replacePlaceholders(String text, SWArena arena) {
+        int starting = 0;
+
+        if (!arena.isStarted()) {
+            GameCountDownUpdateTask task = arena.getTask(GameCountDownUpdateTask.class);
+
+            if (task != null) {
+                starting = task.getCountdown();
+            }
+        }
+
+        String finalStartingString = String.valueOf(starting);
         Map<String, String> map = new HashMap<String, String>() {{
             put("%refilled%", String.valueOf(false));
             put("%refill_time%", "05:00");
             put("%server_name%", SkyWars.getServerName());
             put("%players_count%", String.valueOf(arena.getPlayers().size()));
             put("%max_slots%", String.valueOf(arena.getMap().getMaxSlots()));
-            put("%is_starting%", String.valueOf(arena.isStarting()));
-            put("%starting_time%", "60s");
+            put("%is_starting%", String.valueOf(arena.getPlayers().size() >= arena.getMap().getMinSlots()));
+            put("%starting_time%", finalStartingString);
             put("%is_started%", String.valueOf(arena.isStarted()));
             put("%kills%", "0");
         }};

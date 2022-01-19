@@ -1,0 +1,21 @@
+kill-messages:
+  ENTITY_ATTACK:
+    - "{%0} was killed by {%1}"
+  PROJECTILE:
+    - "{%0} was killed by {%1}"
+  SUFFOCATION:
+    - "{%0} was suffocated."
+  FALL:
+    - "{%0} died."
+  FIRE:
+    - "{%0} burn."
+  FIRE_TICK:
+    - "{%0} burn."
+  LAVA:
+    - "{%0} burn."
+  VOID:
+    - "{%0} died."
+  SUICIDE:
+    - "{%0} died."
+  MAGIC:
+    - "{%0} died."

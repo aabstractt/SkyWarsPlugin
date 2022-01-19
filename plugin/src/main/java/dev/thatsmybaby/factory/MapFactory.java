@@ -86,4 +86,8 @@ final public class MapFactory {
 
         return betterMap;
     }
+
+    public int getInitialCountdown() {
+        return SkyWars.getInstance().getConfig().getInt("default-countdown");
+    }
 }

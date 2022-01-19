@@ -40,13 +40,13 @@ final public class GameSign {
             return;
         }
 
-        player.sendMessage(TextFormat.GREEN + "Sending you to " + gameArena.getServerName() + "*" + gameArena.getMapName());
+        player.sendMessage(Placeholders.replacePlaceholders("GAME_FOUND_SENDING", gameArena.getServerName(), gameArena.getMapName()));
 
         TaskUtils.runAsync(() -> GameProvider.getInstance().connectTo(player, gameArena));
     }
 
     public void tick() {
-        BlockEntitySign sign = (BlockEntitySign) this.position.getLevel().getBlockEntity(this.position);
+        BlockEntitySign sign = this.position.getTypedBlockEntity(BlockEntitySign.class);
 
         if (sign == null) {
             return;

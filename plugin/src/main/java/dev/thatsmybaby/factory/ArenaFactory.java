@@ -2,10 +2,15 @@ package dev.thatsmybaby.factory;
 
 import cn.nukkit.Player;
 import cn.nukkit.Server;
+import cn.nukkit.event.entity.EntityDamageEvent;
+import cn.nukkit.level.Location;
+import dev.thatsmybaby.Placeholders;
 import dev.thatsmybaby.SkyWars;
 import dev.thatsmybaby.TaskUtils;
 import dev.thatsmybaby.object.SWArena;
 import dev.thatsmybaby.object.SWMap;
+import dev.thatsmybaby.object.task.GameCountDownUpdateTask;
+import dev.thatsmybaby.player.SWPlayer;
 import lombok.Getter;
 
 import java.io.File;
@@ -44,6 +49,8 @@ final public class ArenaFactory {
             MapFactory.getInstance().copyMap(new File(SkyWars.getInstance().getDataFolder(), "backups/" + arena.getMap().getMapName()), new File(Server.getInstance().getDataPath(), "worlds/" + arena.getWorldName()));
 
             Server.getInstance().loadLevel(arena.getWorldName());
+
+            arena.scheduleRepeating(new GameCountDownUpdateTask(arena, MapFactory.getInstance().getInitialCountdown()), 20);
         });
 
         return arena;
@@ -69,6 +76,54 @@ final public class ArenaFactory {
         return true;
     }
 
+    public void handlePlayerDeath(Player instance, SWArena arena, EntityDamageEvent.DamageCause cause, boolean removeScoreboard) {
+        if (arena == null) {
+            SkyWars.getInstance().getLogger().warning(instance.getName() + " tried died without game?");
+
+            return;
+        }
+
+        SWPlayer player = arena.getPlayer(instance);
+
+        if (player == null) {
+            return;
+        }
+
+        if (removeScoreboard) {
+            player.getScoreboardBuilder().remove();
+        }
+
+        arena.removePlayer(instance);
+
+        if (!arena.isStarted()) {
+            arena.broadcastMessage("PLAYER_LEFT", player.getName(), String.valueOf(arena.getPlayers().size()), String.valueOf(arena.getMap().getMaxSlots()));
+
+            return;
+        }
+
+        Location location = arena.getMap().getSpawnLocation(player.getSlot(), arena.getWorld());
+
+        if (location == null) {
+            return;
+        }
+
+        instance.teleport(location);
+
+        SWPlayer lastAttack = player.getLastAttack();
+
+        String message;
+
+        if (lastAttack != null) {
+            message = Placeholders.replacePlaceholders(SkyWars.getRandomKillMessage("ENTITY_ATTACK"), player.getName(), lastAttack.getName());
+
+            lastAttack.increaseKills();
+        } else {
+            message = Placeholders.replacePlaceholders(SkyWars.getRandomKillMessage(cause.name()), player.getName());
+        }
+
+        arena.broadcastMessage(message);
+    }
+
     public void unregisterArena(int id) {
         this.arenas.remove(id);
     }
@@ -82,7 +137,7 @@ final public class ArenaFactory {
     }
 
     public SWArena getSignArena(String signString) {
-        return this.arenas.values().stream().filter(arena -> signString.equals(arena.getPositionString())).findFirst().orElse(null);
+        return this.arenas.values().stream().filter(arena -> signString.equals(arena.getRawId())).findFirst().orElse(null);
     }
 
     public SWArena getPlayerArena(Player player) {
@@ -93,7 +148,7 @@ final public class ArenaFactory {
         SWArena betterArena = null;
 
         for (SWArena arena : this.arenas.values()) {
-            if (!arena.isAllowedJoin() || (arena.getPositionString() != null && withoutSign)) {
+            if (!arena.isAllowedJoin() || (arena.getRawId() != null && withoutSign)) {
                 continue;
             }
 

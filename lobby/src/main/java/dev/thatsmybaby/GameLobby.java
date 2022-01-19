@@ -17,6 +17,7 @@ public class GameLobby extends PluginBase {
         instance = this;
 
         this.saveDefaultConfig();
+        this.saveResource("messages.yml");
 
         // TODO: initialize connection with the games management
         GameProvider.getInstance().init(getConfig().getString("redis.address"), getConfig().getString("redis.password"));

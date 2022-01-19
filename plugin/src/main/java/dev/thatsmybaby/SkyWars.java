@@ -2,28 +2,43 @@ package dev.thatsmybaby;
 
 import cn.nukkit.Server;
 import cn.nukkit.plugin.PluginBase;
+import cn.nukkit.plugin.PluginLogger;
+import cn.nukkit.utils.Config;
 import cn.nukkit.utils.TextFormat;
 import dev.thatsmybaby.command.PlayAgainCommand;
 import dev.thatsmybaby.command.SWCommand;
 import dev.thatsmybaby.factory.ArenaFactory;
 import dev.thatsmybaby.factory.MapFactory;
+import dev.thatsmybaby.listener.EntityDamageListener;
 import dev.thatsmybaby.listener.PlayerJoinListener;
+import dev.thatsmybaby.listener.PlayerQuitListener;
 import dev.thatsmybaby.object.SWArena;
 import dev.thatsmybaby.provider.GameProvider;
 import lombok.Getter;
+
+import java.io.File;
+import java.util.*;
 
 public class SkyWars extends PluginBase {
 
     @Getter private static SkyWars instance;
     @Getter private static String serverName;
 
+    private static Map<String, List<String>> killMessages = new HashMap<>();
+
     public static int NORMAL_PRIORITY = 0, HIGH_PRIORITY = 1;
 
     @Override
+    @SuppressWarnings("unchecked")
     public void onEnable() {
         instance = this;
 
         this.saveDefaultConfig();
+        this.saveResource("messages.yml");
+        this.saveResource("features.yml");
+
+        Placeholders.messages = (new Config(new File(this.getDataFolder(), "messages.yml"))).getAll();
+        killMessages = (Map<String, List<String>>) new Config(new File(this.getDataFolder(), "features.yml")).get("kill-messages");
 
         serverName = getConfig().getString("redis.server-name");
 
@@ -34,21 +49,40 @@ public class SkyWars extends PluginBase {
         GameProvider.getInstance().addServer(getServerName());
 
         this.getServer().getPluginManager().registerEvents(new PlayerJoinListener(), this);
+        this.getServer().getPluginManager().registerEvents(new EntityDamageListener(), this);
+        this.getServer().getPluginManager().registerEvents(new PlayerQuitListener(), this);
 
         this.getServer().getCommandMap().register("sw", new SWCommand("sw", "SkyWars commands"));
         this.getServer().getCommandMap().register("playagain", new PlayAgainCommand("playagain", "Find a new game available"));
 
         Server.getInstance().getScheduler().scheduleRepeatingTask(this, this::tick, 10, true);
+
+        PluginLogger logger = getLogger();
+        VersionInfo versionInfo = GameProvider.getVersionInfo();
+
+        // TODO: Waterdog log
+        logger.info("§bStarting SkyWars Server!");
+        logger.info("§9Commit Id: " + versionInfo.commitId());
+        logger.info("§9Branch: " + versionInfo.branchName());
+        logger.info("§9Build Version: " + versionInfo.buildVersion());
+        logger.info("§9Build Author: " + versionInfo.author());
+        logger.info("§9Development Build: " + versionInfo.development());
+
+        if (versionInfo.development() || versionInfo.buildVersion().equals("#build") || versionInfo.branchName().equals("unknown")) {
+            logger.error("Custom build? Unofficial builds should be not run in production!");
+        } else {
+            logger.info("§bDiscovered branch §9" + versionInfo.branchName() + "§b commitId §9" + versionInfo.commitId());
+        }
     }
 
     @Override
     public void onDisable() {
         for (SWArena arena : ArenaFactory.getInstance().getArenas().values()) {
-            if (arena.getPositionString() == null) {
+            if (arena.getRawId() == null) {
                 continue;
             }
 
-            GameProvider.getInstance().removeGame(arena.getPositionString(), getServerName());
+            GameProvider.getInstance().removeGame(arena.getRawId(), getServerName());
         }
 
         GameProvider.getInstance().removeServer(getServerName());
@@ -76,11 +110,19 @@ public class SkyWars extends PluginBase {
                     return;
                 }
 
-                GameProvider.getInstance().updateGame(arena.getMap().getMapName(), rawId, getServerName(), arena.getId(), arena.getStatus(), arena.getPlayers().size(), arena.getMap().getMaxSlots(), !arena.isAllowedJoin());
+                arena.pushUpdate();
 
                 getLogger().warning("Game found! Sending to " + rawId);
             }
         });
+    }
+
+    public static String getRandomKillMessage(String type) {
+        List<String> list = killMessages.get(type);
+
+        Collections.sort(list);
+
+        return list.stream().findAny().orElse(null);
     }
 
     public static String invalidUsageGame() {

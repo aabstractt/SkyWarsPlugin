@@ -29,7 +29,7 @@ public class PlayAgainCommand extends Command {
         SWArena arena = ArenaFactory.getInstance().getPlayerArena((Player) sender);
 
         if (arena == null) {
-            sender.sendMessage(TextFormat.RED + "An error occurred while trying to execute this command.");
+            ((Player) sender).kick(Placeholders.replacePlaceholders("GAME_NOT_FOUND"));
 
             return false;
         }
@@ -47,6 +47,8 @@ public class PlayAgainCommand extends Command {
 
             return false;
         }
+
+        sender.sendMessage(Placeholders.replacePlaceholders("GAME_FOUND_HERE", betterArena.getMap().getMapName()));
 
         return false;
     }
@@ -84,10 +86,9 @@ public class PlayAgainCommand extends Command {
             return;
         }
 
+        player.sendMessage(Placeholders.replacePlaceholders("GAME_FOUND_SENDING", betterArena.getServerName(), betterArena.getMapName()));
+
         GameArena finalBetterArena = betterArena;
-
-        player.sendMessage(TextFormat.GREEN + "Game found! Sending you to " + TextFormat.GOLD + finalBetterArena.getServerName());
-
         TaskUtils.runAsync(() -> {
             GameProvider.getInstance().setPlayerMap(player.getName(), finalBetterArena.idAsInt());
 

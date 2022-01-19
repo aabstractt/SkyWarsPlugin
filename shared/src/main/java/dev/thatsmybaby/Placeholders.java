@@ -4,12 +4,28 @@ import cn.nukkit.Server;
 import cn.nukkit.level.Level;
 import cn.nukkit.level.Location;
 import cn.nukkit.level.Position;
+import cn.nukkit.utils.Config;
 import cn.nukkit.utils.PluginException;
+import cn.nukkit.utils.TextFormat;
+
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 final public class Placeholders {
 
-    public static String replacePlaceholders(String message, String... args) {
-        return message;
+    public static Map<String, Object> messages = new HashMap<>();
+
+    public static String replacePlaceholders(String text, String... args) {
+        if (messages.containsKey(text)) {
+            text = messages.get(text).toString();
+        }
+
+        for (int i = 0; i < args.length; i++) {
+            text = text.replaceAll("\\{%" + i + "}", args[i]);
+        }
+
+        return TextFormat.colorize(text);
     }
 
     public static String locationToString(Location loc) {
