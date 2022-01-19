@@ -8,6 +8,7 @@ import dev.thatsmybaby.GameLobby;
 import dev.thatsmybaby.Placeholders;
 import dev.thatsmybaby.TaskUtils;
 import dev.thatsmybaby.object.GameArena;
+import dev.thatsmybaby.object.GameStatus;
 import dev.thatsmybaby.provider.GameProvider;
 import lombok.Getter;
 
@@ -40,6 +41,12 @@ final public class GameSign {
             return;
         }
 
+        if (gameArena.getStatus().equalsIgnoreCase(GameStatus.IN_GAME.name())) {
+            player.sendMessage(TextFormat.RED + "Game already started! Searching other game...");
+
+            return;
+        }
+
         player.sendMessage(Placeholders.replacePlaceholders("GAME_FOUND_SENDING", gameArena.getServerName(), gameArena.getMapName()));
 
         TaskUtils.runAsync(() -> GameProvider.getInstance().connectTo(player, gameArena));
@@ -68,7 +75,7 @@ final public class GameSign {
                 GameLobby.getInstance().getLogger().warning("Server available not found...");
             }
 
-            this.tickWaiting = 0;
+            this.tickWaiting = -10;
 
             return;
         }
@@ -85,9 +92,11 @@ final public class GameSign {
     private String statusColor(GameArena gameArena) {
         if (gameArena.playersAsInt() > gameArena.maxSlotsAsInt()) {
             return TextFormat.DARK_PURPLE + "Full";
-        }/* else if (10 < 10) {
+        } else if (gameArena.getStatus().equals(GameStatus.STARTING.name())) {
             return TextFormat.GOLD + "Starting";
-        }*/
+        } else if (gameArena.getStatus().equals(GameStatus.IN_GAME.name())) {
+            return TextFormat.DARK_RED + "In-Game";
+        }
 
         return TextFormat.GREEN + "Waiting";
     }

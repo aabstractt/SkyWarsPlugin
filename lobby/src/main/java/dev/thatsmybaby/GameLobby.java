@@ -2,11 +2,14 @@ package dev.thatsmybaby;
 
 import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.plugin.PluginLogger;
+import cn.nukkit.utils.Config;
 import dev.thatsmybaby.listener.PlayerInteractListener;
 import dev.thatsmybaby.listener.SignChangeListener;
 import dev.thatsmybaby.provider.GameProvider;
 import dev.thatsmybaby.utils.GameSign;
 import lombok.Getter;
+
+import java.io.File;
 
 public class GameLobby extends PluginBase {
 
@@ -18,6 +21,8 @@ public class GameLobby extends PluginBase {
 
         this.saveDefaultConfig();
         this.saveResource("messages.yml");
+
+        Placeholders.messages = (new Config(new File(this.getDataFolder(), "messages.yml"))).getAll();
 
         // TODO: initialize connection with the games management
         GameProvider.getInstance().init(getConfig().getString("redis.address"), getConfig().getString("redis.password"));

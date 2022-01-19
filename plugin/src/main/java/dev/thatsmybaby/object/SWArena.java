@@ -103,7 +103,7 @@ public class SWArena extends TaskHandlerStorage {
 
         SWPlayer targetPlayer = new SWPlayer(player.getName(), player.getLoginChainData().getXUID(), this, optional.get());
 
-        this.players.put(player.getName(), targetPlayer);
+        this.players.put(player.getName().toLowerCase(), targetPlayer);
 
         targetPlayer.lobbyAttributes();
         targetPlayer.getScoreboardBuilder().update(this);
@@ -114,7 +114,7 @@ public class SWArena extends TaskHandlerStorage {
     }
 
     public void removePlayer(Player player) {
-        SWPlayer target = this.players.remove(player.getName());
+        SWPlayer target = this.players.remove(player.getName().toLowerCase());
 
         if (target != null && target.getSlot() != -1) {
             this.slots.add(target.getSlot());
