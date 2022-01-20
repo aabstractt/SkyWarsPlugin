@@ -26,8 +26,7 @@ public class SWArena extends TaskHandlerStorage {
 
     private final List<Integer> slots;
 
-    @Getter @Setter
-    private GameStatus status = GameStatus.IDLE;
+    @Getter @Setter private GameStatus status = GameStatus.IDLE;
 
     public SWArena(Integer id, SWMap map, String rawId) {
         this.id = id;

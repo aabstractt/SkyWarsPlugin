@@ -2,7 +2,6 @@ package dev.thatsmybaby.object.task;
 
 import cn.nukkit.Server;
 import cn.nukkit.scheduler.Task;
-import cn.nukkit.utils.TextFormat;
 import dev.thatsmybaby.Placeholders;
 import dev.thatsmybaby.object.SWArena;
 import dev.thatsmybaby.player.SWPlayer;
