@@ -2,3 +2,9 @@ YOU_MUST_WAIT_TO_START: "&cYou must wait for this game to start before you can r
 GAME_FOUND_SENDING: "&a¡Juego encontrado! Intentando conectar con &e{%0} &amapa &e{%1}"
 GAME_FOUND_HERE: "&aSe ha encontrado un mapa en el servidor actual por lo cual no serás enviado a otro servidor."
 GAME_NOT_FOUND: "&cNo se ha encontrado juegos disponibles."
+
+PLAYER_JOINED: "{%0} ha entrado! ({%1}/{%2})"
+PLAYER_LEFT: "{%0} ha salido! ({%1}/{%2})"
+
+GAME_WINNER: "{%0} ha ganado la partida en el mapa {%1}"
+GAME_WINNER_NOT_FOUND: "Nadie ha ganado en el mapa {%0}"

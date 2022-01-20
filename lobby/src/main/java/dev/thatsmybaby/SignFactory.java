@@ -18,14 +18,14 @@ final public class SignFactory {
     public void init() {
         for (String loc : GameLobby.getInstance().getConfig().getStringList("signs")) {
             registerNewSign(loc, false);
-
-            System.out.println("Loading sign");
         }
 
         Server.getInstance().getScheduler().scheduleRepeatingTask(GameLobby.getInstance(), this::tick, 20, true);
     }
 
     public void registerNewSign(String string, boolean save) {
+        System.out.println(string);
+
         this.gameSigns.put(string, new GameSign(string));
 
         if (save) {

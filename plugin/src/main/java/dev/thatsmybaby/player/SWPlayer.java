@@ -3,7 +3,6 @@ package dev.thatsmybaby.player;
 import cn.nukkit.Player;
 import cn.nukkit.Server;
 import cn.nukkit.level.Location;
-import dev.thatsmybaby.Placeholders;
 import dev.thatsmybaby.SkyWars;
 import dev.thatsmybaby.object.SWArena;
 import dev.thatsmybaby.object.scoreboard.ScoreboardBuilder;
@@ -57,12 +56,11 @@ public class SWPlayer {
         Location location = this.arena.getMap().getSpawnLocation(this.slot, this.arena.getWorld());
 
         if (location == null) {
-            return;
+            location = Location.fromObject(this.arena.getWorld().getSpawnLocation(), null, 0, 0);
         }
 
-        instance.dataPacket(this.scoreboardBuilder.initialize());
-
         instance.teleport(location);
+        instance.dataPacket(this.scoreboardBuilder.initialize());
 
         instance.getInventory().clearAll();
         instance.getCursorInventory().clearAll();
@@ -121,7 +119,7 @@ public class SWPlayer {
             return null;
         }
 
-        return this.arena.findInstance(target);
+        return this.arena.forceGetPlayer(target);
     }
 
     public SWPlayer getLastAssistance() {
@@ -143,7 +141,7 @@ public class SWPlayer {
             return null;
         }
 
-        return this.arena.findInstance(target);
+        return this.arena.forceGetPlayer(target);
     }
 
     public void attack(Player player) {
@@ -163,10 +161,6 @@ public class SWPlayer {
         this.lastAssistanceUpdate = System.currentTimeMillis();
 
         this.lastAttack = player.getName();
-    }
-
-    public void sendMessage(String message, String... args) {
-        getInstance().sendMessage(Placeholders.replacePlaceholders(message, args));
     }
 
     public void increaseKills() {

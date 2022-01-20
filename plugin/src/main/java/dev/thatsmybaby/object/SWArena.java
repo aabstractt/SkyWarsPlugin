@@ -20,8 +20,9 @@ public class SWArena extends TaskHandlerStorage {
     @Getter private final int id;
     @Getter private final SWMap map;
     @Getter private final String worldName;
-    @Getter @Setter private String rawId;
+    @Getter private String rawId;
     @Getter private final Map<String, SWPlayer> players = new HashMap<>();
+    @Getter private final Map<String, SWPlayer> spectators = new HashMap<>();
 
     private final List<Integer> slots;
 
@@ -106,7 +107,8 @@ public class SWArena extends TaskHandlerStorage {
         this.players.put(player.getName().toLowerCase(), targetPlayer);
 
         targetPlayer.lobbyAttributes();
-        targetPlayer.getScoreboardBuilder().update(this);
+
+        this.forceGetEveryone().forEach(target -> target.getScoreboardBuilder().update(this));
 
         this.pushUpdate();
 
@@ -116,9 +118,19 @@ public class SWArena extends TaskHandlerStorage {
     public void removePlayer(Player player) {
         SWPlayer target = this.players.remove(player.getName().toLowerCase());
 
-        if (target != null && target.getSlot() != -1) {
-            this.slots.add(target.getSlot());
+        if (target == null || target.getSlot() == -1) {
+            return;
         }
+
+        if (this.isStarted()) {
+            return;
+        }
+
+        this.slots.add(target.getSlot());
+
+        this.pushUpdate();
+
+        this.forceGetEveryone().forEach(p -> p.getScoreboardBuilder().update(this));
     }
 
     public SWPlayer getPlayer(Player player) {
@@ -130,22 +142,22 @@ public class SWArena extends TaskHandlerStorage {
     }
 
     public void joinAsSpectator(SWPlayer player) {
-
+        this.spectators.put(player.getName().toLowerCase(), player);
     }
 
     public void removeSpectator(Player player) {
-
+        this.spectators.remove(player.getName().toLowerCase());
     }
 
     public SWPlayer getSpectator(Player player) {
-        return null;
+        return this.spectators.get(player.getName().toLowerCase());
     }
 
     public boolean inArenaAsSpectator(Player player) {
         return this.getSpectator(player) != null;
     }
 
-    public void removeInstance(Player player) {
+    public void forceRemovePlayer(Player player) {
         if (this.inArenaAsPlayer(player)) {
             this.removePlayer(player);
         } else {
@@ -153,8 +165,15 @@ public class SWArena extends TaskHandlerStorage {
         }
     }
 
-    public SWPlayer findInstance(Player player) {
+    public SWPlayer forceGetPlayer(Player player) {
         return this.inArenaAsPlayer(player) ? this.getPlayer(player) : this.getSpectator(player);
+    }
+
+    public List<SWPlayer> forceGetEveryone() {
+        return new ArrayList<SWPlayer>() {{
+            addAll(getPlayers().values());
+            addAll(getSpectators().values());
+        }};
     }
 
     public boolean inArena(Player player) {
@@ -168,10 +187,29 @@ public class SWArena extends TaskHandlerStorage {
     }
 
     public void pushUpdate() {
-        GameProvider.getInstance().updateGame(this.map.getMapName(), this.rawId, SkyWars.getServerName(), this.id, this.status, this.players.size(), this.map.getMaxSlots(), !this.isAllowedJoin());
+        if (this.rawId == null) {
+            return;
+        }
+
+        GameProvider.getInstance().updateGame(this.map.getMapName(), this.rawId, SkyWars.getServerName(), this.id, this.status, this.players.size(), this.map.getMaxSlots());
+    }
+
+    public void pushUpdateRemove() {
+        if (this.rawId == null) {
+            return;
+        }
+
+        GameProvider.getInstance().removeGame(this.rawId, SkyWars.getServerName());
+
+        this.rawId = null;
     }
 
     public void forceClose() {
+        this.slots.clear();
+        this.players.clear();
+
+        this.pushUpdateRemove();
+
         ArenaFactory.getInstance().unregisterArena(this.id);
     }
 }

@@ -53,7 +53,7 @@ final public class GameSign {
     }
 
     public void tick() {
-        BlockEntitySign sign = this.position.getTypedBlockEntity(BlockEntitySign.class);
+        BlockEntitySign sign = (BlockEntitySign) this.position.getLevel().getBlockEntity(this.position);
 
         if (sign == null) {
             return;

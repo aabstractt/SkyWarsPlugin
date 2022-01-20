@@ -2,6 +2,7 @@ package dev.thatsmybaby;
 
 import cn.nukkit.Server;
 import cn.nukkit.scheduler.Task;
+import cn.nukkit.scheduler.TaskHandler;
 import cn.nukkit.utils.PluginException;
 import lombok.NonNull;
 
@@ -14,14 +15,14 @@ public abstract class TaskHandlerStorage {
     private final Map<String, Integer> taskIds = new HashMap<>();
 
     final public void scheduleRepeating(Task task, int ticks) {
-        Server.getInstance().getScheduler().scheduleRepeatingTask(SkyWars.getInstance(), task, ticks);
+        TaskHandler taskHandler = Server.getInstance().getScheduler().scheduleRepeatingTask(SkyWars.getInstance(), task, ticks);
 
         this.taskStorage.put(task.getClass().getSimpleName(), task);
-        this.taskIds.put(task.getClass().getSimpleName(), task.getTaskId());
+        this.taskIds.put(task.getClass().getSimpleName(), taskHandler.getTaskId());
     }
 
     final public void cancelTask(String taskName, boolean cancel) {
-        int taskId = this.taskIds.getOrDefault(taskName, -1);
+        int taskId = this.taskIds.getOrDefault(taskName, -2);
 
         if (taskId == -1) {
             throw new PluginException("Task " + taskName + " is invalid name");

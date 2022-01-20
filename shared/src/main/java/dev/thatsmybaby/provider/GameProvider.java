@@ -27,7 +27,7 @@ public class GameProvider {
     // Game server insert hash of a game running
     public static String HASH_GAMES_RUNNING = "sw_games_running";
     // Game server send the data to this hash
-    public static String HASH_GAMES_UPDATING = "sw_games_updating";
+    public static String HASH_GAMES_UPDATING = "sw_games_updating:%s";
     // Player send data to this hash (map selected, lastServer etc)
     public static String HASH_PLAYERS_JOINING = "sW_players_joining";
     // Put here when a player is joining to a game server
@@ -80,12 +80,8 @@ public class GameProvider {
         });
     }
 
-    public void updateGame(String mapName, String positionString, String serverName, int gameId, GameStatus gameStatus, int playersCount, int maxSlots, boolean started) {
+    public void updateGame(String mapName, String positionString, String serverName, int gameId, GameStatus gameStatus, int playersCount, int maxSlots) {
         runTransaction(jedis -> {
-            if (started) {
-                return;
-            }
-
             if (!jedis.sismember(HASH_GAMES_RUNNING, positionString)) {
                 jedis.sadd(HASH_GAMES_RUNNING, positionString);
             }

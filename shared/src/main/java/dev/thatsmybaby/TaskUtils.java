@@ -2,6 +2,7 @@ package dev.thatsmybaby;
 
 import cn.nukkit.Server;
 
+@SuppressWarnings("deprecation")
 public class TaskUtils {
 
     public static void runAsync(Runnable runnable) {
@@ -20,6 +21,10 @@ public class TaskUtils {
         } else {
             Server.getInstance().getScheduler().scheduleTask(runnable);
         }
+    }
+
+    public static void runLater(Runnable runnable, int delay) {
+        Server.getInstance().getScheduler().scheduleDelayedTask(runnable, delay);
     }
 
     protected static boolean isPrimaryThread() {

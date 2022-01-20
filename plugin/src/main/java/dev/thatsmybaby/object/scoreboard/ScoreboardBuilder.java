@@ -113,7 +113,8 @@ public class ScoreboardBuilder {
             put("%server_name%", SkyWars.getServerName());
             put("%players_count%", String.valueOf(arena.getPlayers().size()));
             put("%max_slots%", String.valueOf(arena.getMap().getMaxSlots()));
-            put("%is_starting%", String.valueOf(arena.getPlayers().size() >= arena.getMap().getMinSlots()));
+            put("%is_starting%", String.valueOf(arena.getPlayers().size() >= arena.getMap().getMinSlots() && !arena.isStarted()));
+            put("%is_waiting%", String.valueOf(arena.getPlayers().size() < arena.getMap().getMinSlots() && !arena.isStarted()));
             put("%starting_time%", finalStartingString);
             put("%is_started%", String.valueOf(arena.isStarted()));
             put("%kills%", "0");
@@ -132,8 +133,6 @@ public class ScoreboardBuilder {
         }
 
         String[] split = text.split("<display=");
-
-        System.out.println(Arrays.toString(split));
 
         if (split[1].equals("!false") || split[1].equals("true")) {
             return split[0];

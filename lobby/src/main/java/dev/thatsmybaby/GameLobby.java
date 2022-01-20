@@ -18,9 +18,10 @@ public class GameLobby extends PluginBase {
     @Override
     public void onEnable() {
         instance = this;
+        VersionInfo versionInfo = GameProvider.getVersionInfo();
 
         this.saveDefaultConfig();
-        this.saveResource("messages.yml");
+        this.saveResource("messages.yml", versionInfo.development());
 
         Placeholders.messages = (new Config(new File(this.getDataFolder(), "messages.yml"))).getAll();
 
@@ -33,7 +34,6 @@ public class GameLobby extends PluginBase {
         this.getServer().getPluginManager().registerEvents(new SignChangeListener(), this);
 
         PluginLogger logger = getLogger();
-        VersionInfo versionInfo = GameProvider.getVersionInfo();
 
         // TODO: Waterdog log
         logger.info("§bStarting SkyWars Lobby!");

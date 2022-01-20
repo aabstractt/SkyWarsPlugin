@@ -23,8 +23,6 @@ final public class MapFactory {
         Config config = new Config(new File(SkyWars.getInstance().getDataFolder(), "maps.json"));
 
         for (Object object : config.getAll().values()) {
-            System.out.println(object);
-
             this.registerNewMap(mapper.convertValue(object, SWMap.class));
         }
 
@@ -37,8 +35,6 @@ final public class MapFactory {
 
     public void registerNewMap(SWMap map) {
         this.maps.put(map.getMapName(), map);
-
-        System.out.println(map.getSpawns());
     }
 
     public void save() {

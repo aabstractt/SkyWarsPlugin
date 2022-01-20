@@ -32,7 +32,7 @@ public class EntityDamageListener implements Listener {
 
         SWArena arena = ArenaFactory.getInstance().getPlayerArena((Player) entity);
 
-        if (arena == null) {
+        if (arena == null || !arena.isStarted()) {
             ev.setCancelled();
 
             return;
@@ -70,11 +70,13 @@ public class EntityDamageListener implements Listener {
 
         ArenaFactory.getInstance().handlePlayerDeath((Player) entity, arena, ev.getCause(), false);
 
+        arena.removePlayer((Player) entity);
         arena.joinAsSpectator(instance);
 
         ev.setCancelled();
     }
 
+    @EventHandler
     public void onEntityChangeLevelEvent(EntityLevelChangeEvent ev) {
         Entity entity = ev.getEntity();
 
@@ -82,16 +84,37 @@ public class EntityDamageListener implements Listener {
             return;
         }
 
+        String worldName = ev.getTarget().getFolderName();
         SWArena arena = ArenaFactory.getInstance().getPlayerArena((Player) entity);
+
+        if (arena == null) {
+            this.tryJoinArena((Player) entity, worldName);
+
+            return;
+        }
+
+        if (arena.getWorldName().equalsIgnoreCase(worldName)) {
+            return;
+        }
+
+        ArenaFactory.getInstance().handlePlayerDeath((Player) entity, arena, EntityDamageEvent.DamageCause.MAGIC, true);
+
+        arena.forceRemovePlayer((Player) entity);
+
+        this.tryJoinArena((Player) entity, worldName);
+    }
+
+    private void tryJoinArena(Player player, String worldName) {
+        SWArena arena = ArenaFactory.getInstance().getArena(worldName);
 
         if (arena == null) {
             return;
         }
 
-        if (arena.getWorld() == ev.getTarget()) {
-            return;
-        }
+        SWPlayer target = new SWPlayer(player.getName(), player.getLoginChainData().getXUID(), arena, -1);
 
-        ArenaFactory.getInstance().handlePlayerDeath((Player) entity, arena, EntityDamageEvent.DamageCause.MAGIC, true);
+        arena.joinAsSpectator(target);
+
+        target.lobbyAttributes();
     }
 }

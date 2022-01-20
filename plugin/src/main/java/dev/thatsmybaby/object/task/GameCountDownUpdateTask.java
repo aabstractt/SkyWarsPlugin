@@ -25,13 +25,13 @@ final public class GameCountDownUpdateTask extends Task {
             return;
         }
 
-        this.arena.getPlayers().values().forEach(player -> player.getScoreboardBuilder().update(this.arena));
-
         if (this.arena.getPlayers().size() < this.arena.getMap().getMinSlots()) {
             if (this.countdown != MapFactory.getInstance().getInitialCountdown()) {
                 this.countdown = MapFactory.getInstance().getInitialCountdown();
 
                 this.arena.broadcastMessage("START_CANCELLED_NOT_ENOUGH_PLAYERS");
+
+                this.arena.getPlayers().values().forEach(player -> player.getScoreboardBuilder().update(this.arena));
 
                 this.arena.setStatus(GameStatus.IDLE);
                 this.arena.pushUpdate();
@@ -39,6 +39,8 @@ final public class GameCountDownUpdateTask extends Task {
 
             return;
         }
+
+        this.arena.getPlayers().values().forEach(player -> player.getScoreboardBuilder().update(this.arena));
 
         if ((this.countdown > 0 && this.countdown < 6) || Arrays.asList(60, 50, 40, 30, 20, 15, 10).contains(this.countdown)) {
             this.arena.broadcastMessage("GAME_STARTING", String.valueOf(this.countdown));
@@ -55,15 +57,19 @@ final public class GameCountDownUpdateTask extends Task {
             return;
         }
 
+        // change arena status and push the update to lobby servers
+        this.arena.setStatus(GameStatus.IN_GAME);
+        this.arena.pushUpdate();
+
+        this.cancel();
+
         for (SWPlayer player : this.arena.getPlayers().values()) {
             player.matchAttributes();
 
             player.getScoreboardBuilder().update(this.arena);
         }
 
-        // change arena status and push the update to lobby servers
-        this.arena.setStatus(GameStatus.IN_GAME);
-        this.arena.pushUpdate();
+        this.arena.scheduleRepeating(new GameMatchUpdateTask(this.arena), 20);
     }
 
     @Override

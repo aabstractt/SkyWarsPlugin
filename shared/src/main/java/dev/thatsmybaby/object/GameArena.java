@@ -27,8 +27,4 @@ final public class GameArena {
     public int maxSlotsAsInt() {
         return Integer.parseInt(this.maxSlots);
     }
-
-    public String asHash() {
-        return this.serverName + "%" + this.id;
-    }
 }

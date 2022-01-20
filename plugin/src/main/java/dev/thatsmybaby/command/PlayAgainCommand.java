@@ -3,6 +3,7 @@ package dev.thatsmybaby.command;
 import cn.nukkit.Player;
 import cn.nukkit.command.Command;
 import cn.nukkit.command.CommandSender;
+import cn.nukkit.event.entity.EntityDamageEvent;
 import cn.nukkit.utils.TextFormat;
 import dev.thatsmybaby.Placeholders;
 import dev.thatsmybaby.SkyWars;
@@ -39,6 +40,9 @@ public class PlayAgainCommand extends Command {
 
             return false;
         }
+
+        ArenaFactory.getInstance().handlePlayerDeath((Player) sender, arena, EntityDamageEvent.DamageCause.MAGIC, true);
+        arena.forceRemovePlayer((Player) sender);
 
         SWArena betterArena = ArenaFactory.getInstance().getRandomArena(false);
 

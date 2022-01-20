@@ -90,13 +90,13 @@ final public class ArenaFactory {
         }
 
         if (removeScoreboard) {
-            player.getScoreboardBuilder().remove();
+            player.getInstance().dataPacket(player.getScoreboardBuilder().remove());
         }
 
-        arena.removePlayer(instance);
-
         if (!arena.isStarted()) {
-            arena.broadcastMessage("PLAYER_LEFT", player.getName(), String.valueOf(arena.getPlayers().size()), String.valueOf(arena.getMap().getMaxSlots()));
+            arena.broadcastMessage("PLAYER_LEFT", player.getName(), String.valueOf(arena.getPlayers().size() - 1), String.valueOf(arena.getMap().getMaxSlots()));
+
+            TaskUtils.runLater(arena::pushUpdate, 5);
 
             return;
         }
@@ -134,6 +134,10 @@ final public class ArenaFactory {
 
     public SWArena getArena(int id) {
         return this.arenas.get(id);
+    }
+
+    public SWArena getArena(String worldName) {
+        return this.arenas.values().stream().filter(arena -> arena.getWorldName().equalsIgnoreCase(worldName)).findAny().orElse(null);
     }
 
     public SWArena getSignArena(String signString) {

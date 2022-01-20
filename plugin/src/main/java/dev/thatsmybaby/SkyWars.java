@@ -9,9 +9,7 @@ import dev.thatsmybaby.command.PlayAgainCommand;
 import dev.thatsmybaby.command.SWCommand;
 import dev.thatsmybaby.factory.ArenaFactory;
 import dev.thatsmybaby.factory.MapFactory;
-import dev.thatsmybaby.listener.EntityDamageListener;
-import dev.thatsmybaby.listener.PlayerJoinListener;
-import dev.thatsmybaby.listener.PlayerQuitListener;
+import dev.thatsmybaby.listener.*;
 import dev.thatsmybaby.object.SWArena;
 import dev.thatsmybaby.provider.GameProvider;
 import lombok.Getter;
@@ -32,10 +30,11 @@ public class SkyWars extends PluginBase {
     @SuppressWarnings("unchecked")
     public void onEnable() {
         instance = this;
+        VersionInfo versionInfo = GameProvider.getVersionInfo();
 
         this.saveDefaultConfig();
-        this.saveResource("messages.yml");
-        this.saveResource("features.yml");
+        this.saveResource("messages.yml", versionInfo.development());
+        this.saveResource("features.yml", versionInfo.development());
 
         Placeholders.messages = (new Config(new File(this.getDataFolder(), "messages.yml"))).getAll();
         killMessages = (Map<String, List<String>>) new Config(new File(this.getDataFolder(), "features.yml")).get("kill-messages");
@@ -49,6 +48,8 @@ public class SkyWars extends PluginBase {
         GameProvider.getInstance().addServer(getServerName());
 
         this.getServer().getPluginManager().registerEvents(new PlayerJoinListener(), this);
+        this.getServer().getPluginManager().registerEvents(new BlockBreakListener(), this);
+        this.getServer().getPluginManager().registerEvents(new BlockPlaceListener(), this);
         this.getServer().getPluginManager().registerEvents(new EntityDamageListener(), this);
         this.getServer().getPluginManager().registerEvents(new PlayerQuitListener(), this);
 
@@ -58,7 +59,6 @@ public class SkyWars extends PluginBase {
         Server.getInstance().getScheduler().scheduleRepeatingTask(this, this::tick, 10, true);
 
         PluginLogger logger = getLogger();
-        VersionInfo versionInfo = GameProvider.getVersionInfo();
 
         // TODO: Waterdog log
         logger.info("§bStarting SkyWars Server!");
@@ -78,11 +78,7 @@ public class SkyWars extends PluginBase {
     @Override
     public void onDisable() {
         for (SWArena arena : ArenaFactory.getInstance().getArenas().values()) {
-            if (arena.getRawId() == null) {
-                continue;
-            }
-
-            GameProvider.getInstance().removeGame(arena.getRawId(), getServerName());
+            arena.pushUpdateRemove();
         }
 
         GameProvider.getInstance().removeServer(getServerName());
@@ -107,7 +103,9 @@ public class SkyWars extends PluginBase {
                 }
 
                 if (!arena.worldWasGenerated()) {
-                    return;
+                    getLogger().warning("Game is generating world...");
+
+                    continue;
                 }
 
                 arena.pushUpdate();
