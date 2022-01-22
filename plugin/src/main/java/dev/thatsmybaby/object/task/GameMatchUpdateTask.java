@@ -40,7 +40,7 @@ public class GameMatchUpdateTask extends Task {
                 this.arena.forceGetEveryone().forEach(player -> {
                     player.getInstance().dataPacket(player.getScoreboardBuilder().remove());
 
-                    Server.getInstance().dispatchCommand(player.getInstance(), "playagain");
+                    player.getInstance().kick("Server closed");
                 });
             }
 

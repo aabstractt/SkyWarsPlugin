@@ -45,10 +45,10 @@ public class SWArena extends TaskHandlerStorage {
     }
 
     /**
-     * Select a slot for a player
+     * Fetch a slot for a player
      * @return Optional<Integer>
      */
-    public Optional<Integer> selectFirstSlot() {
+    public Optional<Integer> fetchSlot() {
         Collections.shuffle(this.slots);
 
         return this.slots.stream().findAny();
@@ -91,7 +91,7 @@ public class SWArena extends TaskHandlerStorage {
             return;
         }
 
-        Optional<Integer> optional = this.selectFirstSlot();
+        Optional<Integer> optional = this.fetchSlot();
 
         if (!optional.isPresent()) {
             player.kick("Slot available not found...");
