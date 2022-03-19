@@ -7,6 +7,7 @@ import cn.nukkit.utils.TextFormat;
 import dev.thatsmybaby.Placeholders;
 import dev.thatsmybaby.SkyWars;
 import dev.thatsmybaby.TaskHandlerStorage;
+import dev.thatsmybaby.TaskUtils;
 import dev.thatsmybaby.factory.ArenaFactory;
 import dev.thatsmybaby.player.SWPlayer;
 import dev.thatsmybaby.provider.GameProvider;
@@ -75,7 +76,7 @@ public class SWArena extends TaskHandlerStorage {
     }
 
     public void joinAsPlayer(Player player) {
-        GameProvider.getInstance().setPlayerMap(player.getName(), -1);
+        TaskUtils.runAsync(() -> GameProvider.getInstance().setPlayerMap(player.getName(), -1));
 
         if (!this.worldWasGenerated()) {
             player.kick(TextFormat.RED + "World is generating...");
@@ -109,7 +110,7 @@ public class SWArena extends TaskHandlerStorage {
 
         this.forceGetEveryone().forEach(target -> target.getScoreboardBuilder().update(this));
 
-        this.pushUpdate();
+        TaskUtils.runAsync(this::pushUpdate);
 
         this.broadcastMessage("PLAYER_JOINED", player.getName(), String.valueOf(this.players.size()), String.valueOf(this.map.getMaxSlots()));
     }
@@ -127,7 +128,7 @@ public class SWArena extends TaskHandlerStorage {
 
         this.slots.add(target.getSlot());
 
-        this.pushUpdate();
+        TaskUtils.runAsync(this::pushUpdate);
 
         this.forceGetEveryone().forEach(p -> p.getScoreboardBuilder().update(this));
     }
@@ -207,7 +208,7 @@ public class SWArena extends TaskHandlerStorage {
         this.slots.clear();
         this.players.clear();
 
-        this.pushUpdateRemove();
+        TaskUtils.runAsync(this::pushUpdateRemove);
 
         ArenaFactory.getInstance().unregisterArena(this.id);
     }

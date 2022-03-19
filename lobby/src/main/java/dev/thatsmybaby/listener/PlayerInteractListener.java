@@ -6,6 +6,7 @@ import cn.nukkit.event.EventPriority;
 import cn.nukkit.event.Listener;
 import cn.nukkit.event.player.PlayerInteractEvent;
 import dev.thatsmybaby.SignFactory;
+import dev.thatsmybaby.TaskUtils;
 import dev.thatsmybaby.utils.GameSign;
 
 public class PlayerInteractListener implements Listener {
@@ -20,6 +21,6 @@ public class PlayerInteractListener implements Listener {
             return;
         }
 
-        gameSign.handleInteract(player);
+        TaskUtils.runAsync(() -> gameSign.handleInteract(player));
     }
 }

@@ -2,6 +2,7 @@ package dev.thatsmybaby.object.task;
 
 import cn.nukkit.scheduler.Task;
 import dev.thatsmybaby.SkyWars;
+import dev.thatsmybaby.TaskUtils;
 import dev.thatsmybaby.factory.MapFactory;
 import dev.thatsmybaby.object.GameStatus;
 import dev.thatsmybaby.object.SWArena;
@@ -37,7 +38,8 @@ final public class GameCountDownUpdateTask extends Task {
                 this.arena.getPlayers().values().forEach(player -> player.getScoreboardBuilder().update(this.arena));
 
                 this.arena.setStatus(GameStatus.IDLE);
-                this.arena.pushUpdate();
+
+                TaskUtils.runAsync(arena::pushUpdate);
             }
 
             if (this.withoutUsage++ == 40) {
@@ -61,7 +63,8 @@ final public class GameCountDownUpdateTask extends Task {
 
         if (!this.arena.isStarting() && this.countdown < 11) {
             this.arena.setStatus(GameStatus.STARTING);
-            this.arena.pushUpdate();
+
+            TaskUtils.runAsync(arena::pushUpdate);
         }
 
         this.countdown--;
@@ -72,7 +75,7 @@ final public class GameCountDownUpdateTask extends Task {
 
         // change arena status and push the update to lobby servers
         this.arena.setStatus(GameStatus.IN_GAME);
-        this.arena.pushUpdate();
+        TaskUtils.runAsync(arena::pushUpdate);
 
         this.cancel();
 

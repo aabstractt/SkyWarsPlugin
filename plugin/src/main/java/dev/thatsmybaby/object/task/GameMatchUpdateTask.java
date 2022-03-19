@@ -2,6 +2,7 @@ package dev.thatsmybaby.object.task;
 
 import cn.nukkit.scheduler.Task;
 import dev.thatsmybaby.Placeholders;
+import dev.thatsmybaby.TaskUtils;
 import dev.thatsmybaby.object.SWArena;
 import dev.thatsmybaby.player.SWPlayer;
 
@@ -48,7 +49,7 @@ public class GameMatchUpdateTask extends Task {
 
         if (!this.updated) {
             if (this.ticks++ > 5) {
-                this.arena.pushUpdateRemove();
+                TaskUtils.runAsync(arena::pushUpdateRemove);
 
                 this.ticks = 0;
                 this.updated = true;

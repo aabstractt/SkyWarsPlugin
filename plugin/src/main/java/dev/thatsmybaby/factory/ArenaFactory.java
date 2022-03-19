@@ -96,7 +96,7 @@ final public class ArenaFactory {
         if (!arena.isStarted()) {
             arena.broadcastMessage("PLAYER_LEFT", player.getName(), String.valueOf(arena.getPlayers().size() - 1), String.valueOf(arena.getMap().getMaxSlots()));
 
-            TaskUtils.runLater(arena::pushUpdate, 5);
+            TaskUtils.runAsync(arena::pushUpdate);
 
             return;
         }
