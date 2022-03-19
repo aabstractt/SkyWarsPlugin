@@ -50,7 +50,7 @@ final public class ArenaFactory {
 
             Server.getInstance().loadLevel(arena.getWorldName());
 
-            arena.scheduleRepeating(new GameCountDownUpdateTask(arena, MapFactory.getInstance().getInitialCountdown()), 20);
+            arena.scheduleRepeating(new GameCountDownUpdateTask(arena, MapFactory.getInstance().getInitialCountdown(), 0), 20);
         });
 
         return arena;

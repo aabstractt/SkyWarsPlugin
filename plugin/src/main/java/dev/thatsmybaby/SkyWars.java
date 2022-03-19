@@ -116,11 +116,7 @@ public class SkyWars extends PluginBase {
     }
 
     public static String getRandomKillMessage(String type) {
-        List<String> list = killMessages.get(type);
-
-        Collections.sort(list);
-
-        return list.stream().findAny().orElse(null);
+        return killMessages.get(type).stream().sorted().findAny().orElse(null);
     }
 
     public static String invalidUsageGame() {

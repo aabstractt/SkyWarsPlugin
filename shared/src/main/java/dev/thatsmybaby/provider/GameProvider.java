@@ -116,7 +116,7 @@ public class GameProvider {
     public String requestGame(String string, String serverName) {
         return runTransaction(jedis -> {
             if (serverName != null && jedis.sismember(String.format(HASH_SERVER_GAMES_REQUEST, serverName), string)) {
-                jedis.sadd(String.format(HASH_SERVER_GAMES_REQUEST, serverName), string);
+                jedis.srem(String.format(HASH_SERVER_GAMES_REQUEST, serverName), string);
             }
 
             String finalServerName = findServerAvailable();
@@ -179,7 +179,7 @@ public class GameProvider {
             List<Map.Entry<String, Integer>> entryList = new ArrayList<>(map.entrySet());
             entryList.sort(Map.Entry.comparingByValue());
 
-            return entryList.get(0).getKey();
+            return entryList.stream().findAny().map(Map.Entry::getKey).orElse(null);
         });
     }
 
@@ -193,10 +193,10 @@ public class GameProvider {
         });
     }
 
-    public void setPlayerMap(String name, int mapName) {
+    public void setPlayerMap(String name, int mapId) {
         runTransaction(jedis -> {
-            if (mapName != -1) {
-                jedis.set(String.format(PLAYER_MAP_HASH, name), String.valueOf(mapName));
+            if (mapId != -1) {
+                jedis.set(String.format(PLAYER_MAP_HASH, name), String.valueOf(mapId));
             } else {
                 jedis.del(String.format(PLAYER_MAP_HASH, name));
             }

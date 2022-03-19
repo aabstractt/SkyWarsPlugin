@@ -1,6 +1,7 @@
 package dev.thatsmybaby.object.task;
 
 import cn.nukkit.scheduler.Task;
+import dev.thatsmybaby.SkyWars;
 import dev.thatsmybaby.factory.MapFactory;
 import dev.thatsmybaby.object.GameStatus;
 import dev.thatsmybaby.object.SWArena;
@@ -16,6 +17,8 @@ final public class GameCountDownUpdateTask extends Task {
     private final SWArena arena;
 
     @Getter private int countdown;
+
+    private int withoutUsage;
 
     @Override
     public void onRun(int i) {
@@ -37,7 +40,17 @@ final public class GameCountDownUpdateTask extends Task {
                 this.arena.pushUpdate();
             }
 
+            if (this.withoutUsage++ == 40) {
+                this.arena.forceClose();
+
+                SkyWars.getInstance().getLogger().warning("Closing a game because have 40 seconds without any usage");
+            }
+
             return;
+        }
+
+        if (this.withoutUsage != 0) {
+            this.withoutUsage = 0;
         }
 
         this.arena.getPlayers().values().forEach(player -> player.getScoreboardBuilder().update(this.arena));
